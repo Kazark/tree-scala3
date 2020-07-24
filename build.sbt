@@ -5,8 +5,7 @@ lazy val root = project
   .settings(
     name := "dotty-simple",
     version := "0.1.0",
-
+    testFrameworks += new TestFramework("munit.Framework"),
     scalaVersion := dottyVersion,
-
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+    libraryDependencies += "org.scalameta" %% "munit" % "0.7.9" % Test
   )
