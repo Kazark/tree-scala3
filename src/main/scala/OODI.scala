@@ -13,10 +13,6 @@ class JustSendIt(db: Database, bus: Bus) {
     val value = db.get(key)
     bus.publish(value)
   }
-
-  def sendForKey2(key: Int, different: Long): Unit = {
-    ???
-  }
 }
 
 class GlomIt(db: Database, bus: Bus) {
@@ -24,13 +20,13 @@ class GlomIt(db: Database, bus: Bus) {
     val value1 = db.get(key1)
     val value2 = db.get(key2)
     val value3 = db.get(key3)
-    bus.publish(s"$value1$value2$value3")
+    bus.publish(s"$value1 $value2 $value3")
   }
 }
 
 class YadaYadaYada(bus: Bus) {
   def talk(): Int = {
-    bus.publish("yada yada yada!")
+    bus.publish("did gyre and gimble in the wabe")
     5
   }
 }
@@ -52,9 +48,4 @@ object DepInj {
   type DI[A, B] = A => B
   type DI3[A, B, C] = DI[A, B => C]
   //type DI[A, B, C] = Function[A, Function[B, C]]
-
-  def add(x: Int, y: Int): Int =
-    x + y
-
-  def add(x: Int): Int => Int = y => x + y
 }
