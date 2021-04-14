@@ -1,0 +1,3 @@
+package metalepsis
+
+object DI
