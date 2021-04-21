@@ -15,8 +15,11 @@ class SillyProgram(db: Database, bus: Bus) {
     JustSendIt(db, bus).sendForKey("foo")
     GlomIt(db, bus).glomThese("bar", "baz", "qux")
     YadaYadaYada(bus).talk()
-    Const((db, bus)).get
+    Const((db, bus)).get // <- check
 }
+
+val sillyProgram: DI[(Database, Bus), Int] =
+  DI.const(42)
 
 @main def main(): Int =
   val db = InMemDb(
