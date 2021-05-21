@@ -1,4 +1,4 @@
-package calc
+package metalepsis
 
 @main def main(): Unit =
-  println("Hello, World")
+  println("Hello, world!")
