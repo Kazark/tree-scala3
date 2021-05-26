@@ -1,13 +1,5 @@
 package metalepsis
 
-trait Database {
-  def get(key: String): String
-}
-
-trait Bus {
-  def publish(msg: String): Unit
-}
-
 class JustSendIt(db: Database, bus: Bus) {
   def sendForKey(key: String): Unit = {
     val value = db.get(key)

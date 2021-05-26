@@ -12,14 +12,17 @@ object ConsoleBus extends Bus {
 
 class SillyProgram(db: Database, bus: Bus) {
   def execute(): Int =
-    JustSendIt(db, bus).sendForKey("foo")
+    JustSendIt(db, bus).sendForKey("foo") // <- check
     GlomIt(db, bus).glomThese("bar", "baz", "qux")
     YadaYadaYada(bus).talk()
     Const((db, bus)).get // <- check
 }
 
 val sillyProgram: DI[(Database, Bus), Int] =
-  DI.const(42)
+  DI.combine(
+    Example.justSendIt.map(sendForKey => sendForKey("foo")),
+    DI.const(42)
+  )
 
 @main def main(): Int =
   val db = InMemDb(
@@ -29,4 +32,9 @@ val sillyProgram: DI[(Database, Bus), Int] =
       "qux" -> "slithey toves"
     )
   )
-  SillyProgram(db, ConsoleBus).execute()
+  print("\n--\n")
+  val _ = SillyProgram(db, ConsoleBus).execute()
+  print("\n--\n")
+  val x = sillyProgram.run((db, ConsoleBus))
+  print("\n--\n")
+  x
