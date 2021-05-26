@@ -1,10 +1,11 @@
 package metalepsis
 
-trait Database {
+trait Database:
   def get(key: String): String
-}
 
-object Database {
-  val get: DI[Database, String => String] =
-    DI(db => key => db.get(key))
-}
+object Database:
+  trait Get[E]:
+    def db(e: E): Database
+
+  def get[E](using get: Get[E]): DI[E, String => String] =
+    DI(env => get.db(env).get)

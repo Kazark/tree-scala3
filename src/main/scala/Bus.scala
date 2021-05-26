@@ -1,10 +1,11 @@
 package metalepsis
 
-trait Bus {
+trait Bus:
   def publish(msg: String): Unit
-}
 
-object Bus {
-  val publish: DI[Bus, String => Unit] =
-    DI(bus => msg => bus.publish(msg))
-}
+object Bus:
+  trait Get[E]:
+    def bus(e: E): Bus
+
+  def publish[E](using get: Get[E]): DI[E, String => Unit] =
+    DI(env => msg => get.bus(env).publish(msg))

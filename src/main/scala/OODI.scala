@@ -17,27 +17,18 @@ class GlomIt(db: Database, bus: Bus) {
 }
 
 class YadaYadaYada(bus: Bus) {
-  def talk(): Int = {
+  def talk(): Unit =
     bus.publish("did gyre and gimble in the wabe")
-    5
-  }
 }
 
 class Const[A](env: A) {
   val get: Int = 42
 }
 
-class DepInj[A, B, C](env: A) {
-  def execute(args: B): C =
-    ???
-}
-
-object DepInj {
-  type JustSendIt = DepInj[(Database, Bus), String, Unit]
-  type GlomIt = DepInj[(Database, Bus), (String, String, String), Unit]
-  type YadaYadaYada = DepInj[Bus, Unit, Int]
-  //type DI[A, B, C] = A => B => C
-  type DI[A, B] = A => B
-  type DI3[A, B, C] = DI[A, B => C]
-  //type DI[A, B, C] = Function[A, Function[B, C]]
+class SillyProgram(db: Database, bus: Bus) {
+  def execute(): Int =
+    JustSendIt(db, bus).sendForKey("foo") // <- check
+    GlomIt(db, bus).glomThese("bar", "baz", "qux")
+    YadaYadaYada(bus).talk()
+    Const((db, bus)).get // <- check
 }
