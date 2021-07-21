@@ -1,43 +1,43 @@
 package metalepsis
 
-class JustSendIt(db: Database, bus: Bus) {
+class JustSendIt(db: Database, ui: UI) {
   def sendForKey(key: String): Unit = {
     val value = db.get(key)
-    bus.publish(value)
+    ui.showText(value)
   }
 }
 
-class GlomIt(db: Database, bus: Bus) {
+class GlomIt(db: Database, ui: UI) {
   def glomThese(key1: String, key2: String, key3: String): Unit = {
     val value1 = db.get(key1)
     val value2 = db.get(key2)
     val value3 = db.get(key3)
-    bus.publish(s"$value1 $value2 $value3")
+    ui.showText(s"$value1 $value2 $value3")
   }
 }
 
-class InA(bus: Bus) {
+class InA(ui: UI) {
   def talk(): Unit =
-    bus.publish("In")
-    bus.publish("a")
+    ui.showText("In")
+    ui.showText("a")
 }
 
-class SoftWasThe(bus: Bus) {
+class SoftWasThe(ui: UI) {
   def talk(): Unit =
-    bus.publish("soft")
-    bus.publish("was")
-    bus.publish("the")
+    ui.showText("soft")
+    ui.showText("was")
+    ui.showText("the")
 }
 
 class Const[A](env: A) {
   val get: Int = 42
 }
 
-class PiersPlowman(db: Database, bus: Bus) {
+class PiersPlowman(db: Database, ui: UI) {
   def execute(): Int =
-    InA(bus).talk()
-    GlomIt(db, bus).glomThese("somer", "seson", "whan")
-    SoftWasThe(bus).talk()
-    JustSendIt(db, bus).sendForKey("sonne") // <- check
-    Const((db, bus)).get // <- check
+    InA(ui).talk()
+    GlomIt(db, ui).glomThese("somer", "seson", "whan")
+    SoftWasThe(ui).talk()
+    JustSendIt(db, ui).sendForKey("sonne") // <- check
+    Const((db, ui)).get // <- check
 }
