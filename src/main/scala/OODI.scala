@@ -16,19 +16,28 @@ class GlomIt(db: Database, bus: Bus) {
   }
 }
 
-class YadaYadaYada(bus: Bus) {
+class InA(bus: Bus) {
   def talk(): Unit =
-    bus.publish("did gyre and gimble in the wabe")
+    bus.publish("In")
+    bus.publish("a")
+}
+
+class SoftWasThe(bus: Bus) {
+  def talk(): Unit =
+    bus.publish("soft")
+    bus.publish("was")
+    bus.publish("the")
 }
 
 class Const[A](env: A) {
   val get: Int = 42
 }
 
-class SillyProgram(db: Database, bus: Bus) {
+class PiersPlowman(db: Database, bus: Bus) {
   def execute(): Int =
-    JustSendIt(db, bus).sendForKey("foo") // <- check
-    GlomIt(db, bus).glomThese("bar", "baz", "qux")
-    YadaYadaYada(bus).talk()
+    InA(bus).talk()
+    GlomIt(db, bus).glomThese("somer", "seson", "whan")
+    SoftWasThe(bus).talk()
+    JustSendIt(db, bus).sendForKey("sonne") // <- check
     Const((db, bus)).get // <- check
 }

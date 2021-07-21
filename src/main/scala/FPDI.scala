@@ -5,6 +5,6 @@ import DI._
 val justSendIt: DI[Env, String => Unit] =
   Database.get[Env].andThen(Bus.publish)
 
-val sillyProgram: DI[Env, Int] =
-  justSendIt.map(sendForKey => sendForKey("foo"))
+val piersPlowman: DI[Env, Int] =
+  justSendIt.map(sendForKey => sendForKey("sonne"))
     .and(DI.const(42))
