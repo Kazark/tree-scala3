@@ -38,6 +38,6 @@ class PiersPlowman(db: Database, ui: UI) {
     InA(ui).talk()
     GlomIt(db, ui).glomThese("somer", "seson", "whan")
     SoftWasThe(ui).talk()
-    JustSendIt(db, ui).sendForKey("sonne") // <- check
-    Const((db, ui)).get // <- check
+    JustSendIt(db, ui).sendForKey("sonne")
+    Const((db, ui)).get
 }

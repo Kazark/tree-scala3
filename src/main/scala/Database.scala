@@ -7,5 +7,5 @@ object Database:
   trait Get[E]:
     def db(e: E): Database
 
-  def get[E](using get: Get[E]): DI[E, String => String] =
-    DI(env => get.db(env).get)
+  def get[E](using get: Get[E])(key: String): DI[E, String] =
+    DI(env => get.db(env).get(key))
