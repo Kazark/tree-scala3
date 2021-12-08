@@ -4,3 +4,7 @@ target/
 project/metals.sbt
 project/project/
 .bsp/
+GPATH
+GRTAGS
+GTAGS
+.DS_Store
