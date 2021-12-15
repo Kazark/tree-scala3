@@ -17,22 +17,11 @@ def customize(
   customization: List[String]
 ): Either[Offering[Id], Offering[Option]] =
   customization match
-    case List("done") =>
-      val maybe =
-        offering.fold(
-          Sandwich.done,
-          Pizza.done,
-          IceCream.done,
-        )
-      maybe.toLeft(offering)
+    case List("done") => Offering.done(offering).toLeft(offering)
     case _ =>
-      val customize = offering.fold(
-        Sandwich.customize,
-        Pizza.customize,
-        IceCream.customize,
-      )
-      val maybe = PartialFunction.condOpt(customization)(customize)
-      Right(maybe.getOrElse(offering))
+      PartialFunction.condOpt(customization)(
+        Offering.customize(offering)
+      ).getOrElse(offering).asRight
 
 def price(offering: Offering[Id]): Money =
   Foldable[List].fold(

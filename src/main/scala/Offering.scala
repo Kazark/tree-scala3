@@ -30,6 +30,28 @@ sealed trait Offering[F[_]]:
 object Offering:
   val prompt = List(Sandwich.Tag, Pizza.Tag, IceCream.Tag)
 
+  def done(offering: Offering[Option]): Option[Offering[Id]] =
+    offering.fold(
+      Sandwich.done,
+      Pizza.done,
+      IceCream.done,
+    )
+
+  val customize: CustomizeProduct[Offering[Option]] =
+    _.fold(
+      Sandwich.customize,
+      Pizza.customize,
+      IceCream.customize,
+    )
+
+trait OfferingModule[O[_[_]]]:
+  val Tag: String
+  val cancelK: CancelK[O]
+  def done(o: O[Option]): Option[O[Id]]
+  type L[F[_], A] = FieldLens[FromArgs, O[F], F[A]]
+  def lenses[F[_]]: O[[X] =>> L[F, X]]
+  val customize: CustomizeProduct[O[Option]]
+
 type Meat = String
 type SandwichTopping = String
 type Condiment = String
@@ -56,7 +78,7 @@ given Price[List[SandwichTopping]] =
     if extras > 0 then Money(extras * 0.15) else Monoid[Money].empty
   }
 
-object Sandwich:
+object Sandwich extends OfferingModule[Sandwich]:
   val Tag: String = "sandwich"
 
   given summon[F[_]](using
@@ -66,7 +88,7 @@ object Sandwich:
     condiments: F[List[Condiment]],
   ): Sandwich[F] = Sandwich(bread, meat, toppings, condiments)
 
-  given CancelK[Sandwich] with
+  given cancelK: CancelK[Sandwich] with
     def cancelK[F[_], A](
       f: Sandwich[[X] =>> F[X] => A],
       x: Sandwich[F],
@@ -114,7 +136,7 @@ final case class Pizza[F[_]](
   override def mapK[G[_]](f: F ~> G): Offering[G] =
     Pizza(f(crust), f(toppings))
 
-object Pizza:
+object Pizza extends OfferingModule[Pizza]:
   val Tag = "pizza"
 
   given summon[F[_]](using
@@ -122,7 +144,7 @@ object Pizza:
     toppings: F[List[PizzaTopping]],
   ): Pizza[F] = Pizza(crust, toppings)
 
-  given CancelK[Pizza] with
+  given cancelK: CancelK[Pizza] with
     def cancelK[F[_], A](
       f: Pizza[[X] =>> F[X] => A],
       x: Pizza[F],
@@ -183,7 +205,7 @@ given Price[NonEmptyList[Flavor]] =
 given Price[Set[IceCreamTopping]] =
   toppings => Foldable[List].fold(toppings.toList.map(shim))
 
-object IceCream:
+object IceCream extends OfferingModule[IceCream]:
   val Tag = "ice-cream"
 
   given summon[F[_]](using
@@ -191,7 +213,7 @@ object IceCream:
     toppings: F[Set[IceCreamTopping]],
   ): IceCream[F] = IceCream(scoops, toppings)
 
-  given CancelK[IceCream] with
+  given cancelK: CancelK[IceCream] with
     def cancelK[F[_], A](
       f: IceCream[[X] =>> F[X] => A],
       x: IceCream[F],
