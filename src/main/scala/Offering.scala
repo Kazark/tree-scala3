@@ -2,8 +2,9 @@ package metalepsis
 
 import cats.*
 import cats.data.*
+import cats.syntax.all.*
 
-trait Offering[F[_]]:
+sealed trait Offering[F[_]]:
   def mapK[G[_]](f: F ~> G): Offering[G]
 
   final def cancelWith[A](
@@ -15,6 +16,19 @@ trait Offering[F[_]]:
       case o: Sandwich[F] => o.cancelK(sandwich)
       case o: Pizza[F] => o.cancelK(pizza)
       case o: IceCream[F] => o.cancelK(iceCream)
+
+  final def fold[A](
+    sandwich: Sandwich[F] => A,
+    pizza: Pizza[F] => A,
+    iceCream: IceCream[F] => A,
+  ): A =
+    this match
+      case o: Sandwich[F] => sandwich(o)
+      case o: Pizza[F] => pizza(o)
+      case o: IceCream[F] => iceCream(o)
+
+object Offering:
+  val prompt = List(Sandwich.Tag, Pizza.Tag, IceCream.Tag)
 
 type Meat = String
 type SandwichTopping = String
@@ -43,6 +57,8 @@ given Price[List[SandwichTopping]] =
   }
 
 object Sandwich:
+  val Tag: String = "sandwich"
+
   given summon[F[_]](using
     bread: F[Bread],
     meat: F[Meat],
@@ -62,6 +78,32 @@ object Sandwich:
         f.condiments(x.condiments),
       )
 
+  def done(sandwich: Sandwich[Option]): Option[Sandwich[Id]] =
+    (sandwich.bread, sandwich.meat).mapN {
+      Sandwich(
+        _,
+        _,
+        sandwich.toppings.getOrElse(List.empty),
+        sandwich.condiments.getOrElse(List.empty),
+      )
+    }
+
+  type L[F[_], A] = FieldLens[FromArgs, Sandwich[F], F[A]]
+
+  def lenses[F[_]]: Sandwich[[X] =>> L[F, X]] =
+    apply(
+      FieldLens.fromArgs(_.bread, y => _.copy(bread = y)),
+      FieldLens.fromArgs(_.meat, y => _.copy(meat = y)),
+      FieldLens.fromArgs(_.toppings, y => _.copy(toppings = y)),
+      FieldLens.fromArgs(_.condiments, y => _.copy(condiments = y)),
+    )
+
+  val customize: CustomizeProduct[Sandwich[Option]] =
+    CustomizeProduct.field("bread", lenses.bread) |+|
+    CustomizeProduct.field("meat", lenses.meat) |+|
+    CustomizeProduct.field("toppings", lenses.toppings) |+|
+    CustomizeProduct.field("condiments", lenses.condiments)
+
 type Crust = String
 type PizzaTopping = String
 
@@ -73,6 +115,8 @@ final case class Pizza[F[_]](
     Pizza(f(crust), f(toppings))
 
 object Pizza:
+  val Tag = "pizza"
+
   given summon[F[_]](using
     crust: F[Crust],
     toppings: F[List[PizzaTopping]],
@@ -82,7 +126,25 @@ object Pizza:
     def cancelK[F[_], A](
       f: Pizza[[X] =>> F[X] => A],
       x: Pizza[F],
-    ): List[A] = ???
+    ): List[A] =
+      List(f.crust(x.crust), f.toppings(x.toppings))
+
+  def done(pizza: Pizza[Option]): Option[Pizza[Id]] =
+    pizza.crust.map {
+      Pizza(_, pizza.toppings.getOrElse(List.empty))
+    }
+
+  type L[F[_], A] = FieldLens[FromArgs, Pizza[F], F[A]]
+
+  def lenses[F[_]]: Pizza[[X] =>> L[F, X]] =
+    apply(
+      FieldLens.fromArgs(_.crust, y => _.copy(crust = y)),
+      FieldLens.fromArgs(_.toppings, y => _.copy(toppings = y)),
+    )
+
+  val customize: CustomizeProduct[Pizza[Option]] =
+    CustomizeProduct.field("crust", lenses.crust) |+|
+      CustomizeProduct.field("topping", lenses.toppings)
 
 type Flavor = String
 
@@ -122,6 +184,8 @@ given Price[Set[IceCreamTopping]] =
   toppings => Foldable[List].fold(toppings.toList.map(shim))
 
 object IceCream:
+  val Tag = "ice-cream"
+
   given summon[F[_]](using
     scoops: F[NonEmptyList[Flavor]],
     toppings: F[Set[IceCreamTopping]],
@@ -134,27 +198,19 @@ object IceCream:
     ): List[A] =
       List(f.scoops(x.scoops), f.toppings(x.toppings))
 
-  def customize(
-    icecream: IceCream[Option]
-  )(
-    customization: String
-  ): Either[IceCream[Id], IceCream[Option]] =
-    customization.split(' ').toList match
-      case List("scoop", flavor) =>
-        val scoops =
-           icecream.scoops match
-             case None => NonEmptyList.one(flavor)
-             case Some(flavors) => flavor :: flavors
-        Right(icecream.copy(scoops = Some(scoops)))
-      case List("topping", topping) =>
-        val toppings =
-           icecream.toppings match
-             case None => Set(topping)
-             case Some(ts) => ts + topping
-        Right(icecream.copy(toppings = Some(toppings)))
-      case List("done") =>
-        icecream.scoops match
-          case None => Right(icecream)
-          case Some(flavors) =>
-            Left(IceCream(flavors, icecream.toppings.getOrElse(Set.empty)))
-      case _ => Right(icecream)
+  def done(icecream: IceCream[Option]): Option[IceCream[Id]] =
+    icecream.scoops.map(
+      IceCream(_, icecream.toppings.getOrElse(Set.empty))
+    )
+
+  type L[F[_], A] = FieldLens[FromArgs, IceCream[F], F[A]]
+
+  def lenses[F[_]]: IceCream[[X] =>> L[F, X]] =
+    apply(
+      FieldLens.fromArgs(_.scoops, y => _.copy(scoops = y)),
+      FieldLens.fromArgs(_.toppings, y => _.copy(toppings = y)),
+    )
+
+  val customize: CustomizeProduct[IceCream[Option]] =
+    CustomizeProduct.field("scoop", lenses.scoops) |+|
+      CustomizeProduct.field("topping", lenses.toppings)
