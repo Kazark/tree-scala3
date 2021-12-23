@@ -18,7 +18,10 @@ class DistributionSpec extends DisciplineSuite {
 
 object DistributionSpec {
    def genDist[A](genA: Gen[A]): Gen[Distribution[A]] =
-     Gen.listOf(genA).map(Distribution.uniform)
+     for
+       n <- Gen.choose(0, 4)
+       xs <- Gen.listOfN(n, genA)
+     yield Distribution.uniform(xs)
 
    implicit val arbDistInt: Arbitrary[Distribution[Int]] =
      Arbitrary(genDist(Gen.choose(0, 1000000000)))
