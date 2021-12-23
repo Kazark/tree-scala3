@@ -1,3 +1,7 @@
+lazy val V = new {
+  val cats = "2.7.0"
+}
+
 lazy val root = project
   .in(file("."))
   .settings(
@@ -7,6 +11,8 @@ lazy val root = project
     scalaVersion := "3.1.0",
     libraryDependencies ++= Seq(
       "org.scalameta" %% "munit" % "0.7.29" % Test,
-      "org.typelevel" %% "cats-core" % "2.7.0",
+      "org.typelevel" %% "cats-core" % V.cats,
+      "org.typelevel" %% "discipline-munit" % "1.0.9" % Test,
+      "org.typelevel" %% "cats-laws" % V.cats % Test,
     )
   )
