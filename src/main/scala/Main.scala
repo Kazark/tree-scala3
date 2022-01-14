@@ -1,4 +1,4 @@
-package metalepsis
+package church
 
 @main def main(): Unit =
-  println("Hello, world!")
+  println(s"This better be nine ${Nat.toInt(Nat.nine)}")
