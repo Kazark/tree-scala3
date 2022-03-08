@@ -21,7 +21,9 @@ object Reader {
         Reader(r => f(fa.run(r)).run(r))
 
       override def tailRecM[A, B](a: A)(f: A => Reader[R, Either[A, B]]): Reader[R, B] =
-        ???
+        f(a).flatMap(
+          _.fold(tailRecM(_)(f), _.pure)
+        )
     }
 }
 
@@ -44,7 +46,9 @@ object ReaderT {
       }
 
       override def tailRecM[A, B](a: A)(f: A => ReaderT[F, R, Either[A, B]]): ReaderT[F, R, B] =
-        ???
+        f(a).flatMap(
+          _.fold(tailRecM(_)(f), _.pure)
+        )
     }
 }
 
